@@ -18,11 +18,12 @@ module.exports = async function (context, req) {
     context.done()
 
     const axios = require("axios")
+    const API_URL = "https://www.thecocktaildb.com/api/json/v1/1/"
 
-    // if the request included an ingredient, meake a search with it, if not, get a random drink.
+    // if request included an ingredient, get a drink with it, if not, get a random.
     const response = text == "" ?  
-        await axios.get("https://www.thecocktaildb.com/api/json/v1/1/random.php") :
-        await axios.get("https://www.thecocktaildb.com/api/json/v1/1/filter.php?i="+text)
+        await axios.get(API_URL + "random.php") :
+        await axios.get(API_URL + "filter.php?i="+text)
 
     const data = response.data
     if (!data) {
@@ -33,10 +34,10 @@ module.exports = async function (context, req) {
         )
 
     } else {   
-        // if drink was found by ingredient we must make another request to get full drink info
+        // if drink was found by ingredient, make another request to get full drink info
         if (text) {
             const randomDrink = data.drinks[Math.floor(Math.random()*data.drinks.length)]
-            const resp = await axios.get("https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i="+randomDrink.idDrink)	    
+            const resp = await axios.get(API_URL + "lookup.php?i="+randomDrink.idDrink)	    
   
             axios.post(
                 slackUrl,
