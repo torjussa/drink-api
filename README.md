@@ -1,2 +1,2 @@
 # drink-api
-Azure function consuming the TheCocktailDB 
+Azure function called by Slack slash command consuming [TheCocktailDB](https://www.thecocktaildb.com/api.php)
