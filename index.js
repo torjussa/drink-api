@@ -11,22 +11,20 @@ module.exports = async function (context, req) {
     const text = parameters.text
     const slackUrl = parameters.response_url
     
+    // return acknowledgement
     context.res = {
             status: 200
     };
     context.done()
-    if (text == "keep_warm") {
-        return
-    }
 
     const axios = require("axios")
 
+    // if the request included an ingredient, meake a search with it, if not, get a random drink.
     const response = text == "" ?  
         await axios.get("https://www.thecocktaildb.com/api/json/v1/1/random.php") :
         await axios.get("https://www.thecocktaildb.com/api/json/v1/1/filter.php?i="+text)
 
     const data = response.data
-
     if (!data) {
         await axios.post(
             slackUrl,
@@ -35,11 +33,11 @@ module.exports = async function (context, req) {
         )
 
     } else {   
-        // if drink was found by ingredient we must get full drink info
+        // if drink was found by ingredient we must make another request to get full drink info
         if (text) {
             const randomDrink = data.drinks[Math.floor(Math.random()*data.drinks.length)]
-            const resp = await axios.get("https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i="+randomDrink.idDrink)
-            
+            const resp = await axios.get("https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i="+randomDrink.idDrink)	    
+  
             axios.post(
                 slackUrl,
                 blockify(resp.data.drinks[0]),
@@ -55,6 +53,7 @@ module.exports = async function (context, req) {
     }
 }
 
+// Blockifying the drink to a nicely formatted Slack message
 function blockify (drink) {
     return ({       
         "blocks":  [
@@ -87,6 +86,7 @@ function blockify (drink) {
     })
 }
 
+// Ingredients are returned as objects ingredient1, ingredient2.. ingredientN. If only 3, ingredient4 an on will be null. Same for measure
 function ingredientList(drink) {
     let res = ""
     let i = 1
